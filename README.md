@@ -1,38 +1,43 @@
 
 # Linq-g
 
-## Una implementazione di Linq per Javascript, realizzata utilizzando i Generatori
+
+## A Javascript Linq implementation using ES6 Generators
 
 
-### Caratteristiche dell'implementazione
+### Implementation features
 
 ...
 
-### Prestazioni
+### Performances
 
     TODO: fare dei test comparativi
 
 ...
 
-### Casi d'uso
+### Use cases
 
     TODO:  
     Client
-        analisi dati locali  
-        trasformazione dati API 
-        ricerca 
+        analisi dati in memoria
+        trasformazione risultati API
+        ricerca
+        ???
     Server  
         analisi dati
+        ???
 ...
 
-### Esempi di utilizzo
+### Usage samples
 
     TODO:  
     Utilizzo dal browser
     Utilizzo da Node
+    ???
 ...
 
-### Evoluzioni
+### Future evolutions
 
     TODO:
     Versione WebAssembly
+    ???
