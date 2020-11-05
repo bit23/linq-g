@@ -2,7 +2,7 @@
 # Linq-g
 
 
-## A Javascript Linq implementation using ES6 Generators
+## A Typescript/Javascript Linq implementation using ES6 Generators
 
 
 ### Implementation features
