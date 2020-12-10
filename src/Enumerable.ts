@@ -581,6 +581,7 @@ namespace Linq {
                     return false;
             }
 
+            // TODO: test
             let sourceIterator = source[Symbol.iterator]();
             let otherIterator = other[Symbol.iterator]();
 

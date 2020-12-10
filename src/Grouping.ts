@@ -29,7 +29,10 @@ namespace Linq {
         }
 
         public *[Symbol.iterator](): Iterator<TElement> {
-            return this._elements[Symbol.iterator]();
+            //return this._elements[Symbol.iterator]();
+            for (const element of this._elements) {
+                yield element;
+            }
         }
     }
 
@@ -60,7 +63,10 @@ namespace Linq {
             if(this._lookup == null) {
                 this._lookup = Lookup.create(this._source, this._keySelector, this._elementSelector);
             }
-            return this._lookup[Symbol.iterator]();
+            //return this._lookup[Symbol.iterator]();
+            for (const element of this._lookup) {
+                yield element;
+            }
         }
     }
 
