@@ -15,22 +15,19 @@ namespace Linq {
         extends IterableEnumerable<TElement>
         implements IGrouping<TKey, TElement> {
 
-        private _key: TKey;
-        private _elements: Iterable<TElement>;
+        #elements: Iterable<TElement>;
 
         constructor(key: TKey, elements: Iterable<TElement>) {
             super();
-            this._key = key;
-            this._elements = elements;
+            this.key = key;
+            this.#elements = elements;
         }
 
-        public get key(): TKey {
-            return this._key;
-        }
+        public readonly key: TKey;
 
         public *[Symbol.iterator](): Iterator<TElement> {
             //return this._elements[Symbol.iterator]();
-            for (const element of this._elements) {
+            for (const element of this.#elements) {
                 yield element;
             }
         }

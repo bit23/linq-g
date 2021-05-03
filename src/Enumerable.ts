@@ -2,6 +2,14 @@
 
 namespace Linq {
 
+	export function isEnumerable(object: any): object is Linq.IEnumerable<any> {
+		return object instanceof IterableEnumerable;
+	}
+
+	export function isGroupedEnumerable(object: any): object is Linq.GroupedEnumerable<any, any> {
+		return object instanceof GroupedEnumerable;
+	}
+
     export interface IEnumerable<TSource> extends Iterable<TSource> {
 
         aggregate<TAccumulate, TResult = TAccumulate>(func: AccumulatorFunc<TAccumulate, TSource, TAccumulate>): TResult;
