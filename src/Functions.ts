@@ -14,5 +14,4 @@ namespace Linq {
     export type GroupResultSelectorFunc<TKey, TElement, TResult> = (key: TKey, elements: Iterable<TElement>) => TResult;
 
     export type ResultSelectorFunc<TFirst, TSecond, TResult> = (first: TFirst, second: TSecond) => TResult;
-
 }

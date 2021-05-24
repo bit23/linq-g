@@ -2,10 +2,15 @@
 
 namespace Linq {
 
-    export abstract class Generator {
+    export abstract class Generator<T> {
 
-        protected _index: number = -1;
-        protected _current: any = null;
+        protected _index: number;
+        protected _current: T;
+
+		constructor() {
+			this._index = -1;
+			this._current = null;
+		}
 
         public get index() {
             return this._index;
@@ -20,10 +25,10 @@ namespace Linq {
             this._current = null;
         }
 
-        public abstract [Symbol.iterator](): any;
+        public abstract [Symbol.iterator](): Iterator<T>;
     }
 
-    export class UserGenerator extends Generator {
+    export class UserGenerator<T> extends Generator<T> {
 
         private callback: (index: number, userData?: any) => any;
         private count: number;
@@ -36,7 +41,7 @@ namespace Linq {
             this.userData = userData;
         }
 
-        public *[Symbol.iterator](): any {
+        public *[Symbol.iterator](): Iterator<T> {
             for (let i = 0; i < this.count; i++) {
                 this._index++;
                 let result = this.callback(this.index, this.userData);
@@ -49,7 +54,7 @@ namespace Linq {
         }
     }
 
-    export class NumberGenerator extends Generator {
+    export class NumberGenerator extends Generator<number> {
 
         private start: number;
         private end: number;
@@ -64,7 +69,7 @@ namespace Linq {
             this._current = this.start - this.step;
         }
 
-        public *[Symbol.iterator](): any {
+        public *[Symbol.iterator](): Iterator<number> {
             let count = this.end - this.start;
             for (let i = 0; i < count; i += this.step) {
                 this._index = i;
@@ -75,7 +80,7 @@ namespace Linq {
         }
     }
 
-    export class KeyValueGenerator<TSource, TKey, TValue=TSource> extends Generator {
+    export class KeyValueGenerator<TSource, TKey, TValue=TSource> extends Generator<{ key: TKey, value: TValue }> {
 
         private _iterable: Iterable<TSource>;
         private _keySelector: SelectorFunc<TSource, TKey>;
@@ -100,6 +105,7 @@ namespace Linq {
                 }
                 yield { key: key, value: value };
             }
+			this.reset();
         }
     }
 }

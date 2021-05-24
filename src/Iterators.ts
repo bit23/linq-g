@@ -64,7 +64,6 @@ namespace Linq {
         public abstract [Symbol.iterator](): Iterator<TResult>;
     }
 
-
     export class SimpleIterator<TSource> extends BaseIterator<TSource> {
 
         constructor(iterable: Iterable<TSource>) {
@@ -902,4 +901,107 @@ namespace Linq {
             this._chachedNodeIteration = null;
         }
     }
+
+
+	
+
+	export class OrderedIterator<TSource> 
+		extends BaseIterator<TSource>
+		implements OrderedIterable<TSource> {
+
+		protected static createComparer<TSource, TKey>(keySelector: SelectorFunc<TSource, TKey>, descending: boolean): ComparerFunc<TSource> {
+			return (a, b) => {
+				const aKey = keySelector(a);
+				const bKey = keySelector(b);
+				if (aKey > bKey) return descending ? -1 : 1;
+				if (aKey < bKey) return descending ? 1 : -1;
+				return 0;
+			};
+		} 
+
+		constructor(iterable: Iterable<TSource>, comparer: ComparerFunc<TSource>) {
+			super(iterable);
+			this.comparer = comparer;
+		}
+
+		public readonly comparer: ComparerFunc<TSource>;
+
+		public *[Symbol.iterator](): Iterator<TSource> {
+			const orderedSource = [...this.iterable].sort(this.comparer);
+			yield* orderedSource;
+		}
+	}
+
+	export class OrderByIterator<TSource, TKey> extends OrderedIterator<TSource> {
+
+		constructor(iterable: Iterable<TSource>, keySelector: SelectorFunc<TSource, TKey>, descending = false) {
+            super(iterable, OrderedIterator.createComparer(keySelector, descending));
+        }
+	}
+
+	export class ThenByIterator<TSource, TKey> extends OrderedIterator<TSource> {
+
+		constructor(iterable: OrderedIterable<TSource>, keySelector: SelectorFunc<TSource, TKey>, descending = false) {
+            super(
+				iterable,
+				composeComparers(
+					iterable.comparer,
+					OrderedIterator.createComparer(keySelector, descending)
+				)
+			);
+        }
+	}
+
+	// export class OrderByIterator<TSource, TKey> extends BaseIterator<TSource> {
+
+	// 	protected _keySelector: SelectorFunc<TSource, TKey>;
+	// 	protected _descending: boolean;
+	// 	protected _comparer: ComparerFunc<TSource>;
+
+	// 	constructor(iterable: Iterable<TSource>, keySelector: SelectorFunc<TSource, TKey>, descending = false) {
+    //         super(iterable);
+    //         this._keySelector = keySelector;
+	// 		this._descending = descending;
+
+	// 		this._comparer = this.createComparer(this._keySelector, this._descending);
+    //     }
+
+	// 	protected createComparer(keySelector: SelectorFunc<TSource, TKey>, descending: boolean): ComparerFunc<TSource> {
+	// 		return (a, b) => {
+	// 			const aKey = keySelector(a);
+	// 			const bKey = keySelector(b);
+	// 			if (aKey > bKey) return descending ? -1 : 1;
+	// 			if (aKey < bKey) return descending ? 1 : -1;
+	// 			return 0;
+	// 		};
+	// 	}
+
+	// 	public get keySelector() { return this._keySelector; }
+
+	// 	public get descending() { return this._descending; }
+
+	// 	public *[Symbol.iterator](): Iterator<TSource> {
+	// 		const orderedSource = [...this.iterable].sort(this._comparer);
+	// 		yield* orderedSource;
+	// 	}
+	// }
+
+	// export class ThenByIterator<TSource, TKey> extends OrderByIterator<TSource, TKey> {
+
+	// 	private _currentKeySelector: SelectorFunc<TSource, TKey>;
+	// 	private _currentComparer: ComparerFunc<TSource>;
+
+	// 	constructor(iterable: OrderByIterator<TSource, TKey>, keySelector: SelectorFunc<TSource, TKey>, descending = false) {
+    //         super(iterable, iterable.keySelector, descending);
+	// 		this._currentKeySelector = keySelector;
+
+	// 		const localComparer = this.createComparer(keySelector, descending);
+	// 		this._currentComparer = composeComparers(this._comparer, localComparer);
+    //     }
+
+	// 	public *[Symbol.iterator](): Iterator<TSource> {
+	// 		const orderedSource = [...this.iterable].sort(this._currentComparer);
+	// 		yield* orderedSource;
+	// 	}
+	// }
 }

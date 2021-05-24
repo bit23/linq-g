@@ -10,6 +10,19 @@ namespace Linq {
 		return object instanceof GroupedEnumerable;
 	}
 
+	export function isIterator(object: any): object is Iterator<any> {
+		return Reflect.has(object, "next") && typeof Reflect.get(object, "next") === "function";
+	}
+
+	export function composeComparers<T>(
+		firstComparer: (a: T, b: T) => number,
+		secondComparer: (a: T, b: T) => number
+	) : ((a: T, b: T) => number) {
+		return (a: T, b: T) => firstComparer(a, b) || secondComparer(a, b);
+	}
+
+	
+
     export interface IEnumerable<TSource> extends Iterable<TSource> {
 
         aggregate<TAccumulate, TResult = TAccumulate>(func: AccumulatorFunc<TAccumulate, TSource, TAccumulate>): TResult;
@@ -83,9 +96,9 @@ namespace Linq {
 
         ofType<TResult>(type: new () => TResult): IEnumerable<TResult>;
 
-        orderBy<TField>(keySelector: SelectorFunc<TSource, TField>): IEnumerable<TSource>;
+        orderBy<TKey>(keySelector: SelectorFunc<TSource, TKey>): IOrderedEnumerable<TSource>;
 
-        orderByDescending<TField>(keySelector: SelectorFunc<TSource, TField>): IEnumerable<TSource>;
+        orderByDescending<TKey>(keySelector: SelectorFunc<TSource, TKey>): IOrderedEnumerable<TSource>;
 
         prepend(item: TSource): IEnumerable<TSource>;
 
@@ -116,10 +129,6 @@ namespace Linq {
 
         takeWhile(predicate: PredicateFunc<TSource>): IEnumerable<TSource>;
 
-        // TODO thenBy
-
-        // TODO thenByDescending
-
         toArray(): TSource[];
 
         toDictionary<TKey, TValue>(
@@ -136,6 +145,49 @@ namespace Linq {
 
         zip<TSecond, TResult>(sequence: Iterable<TSecond>, resultSelector: ResultSelectorFunc<TSource, TSecond, TResult>): IEnumerable<TResult>;
     }
+
+	export interface OrderedIterable<TSource> extends Iterable<TSource> {
+		readonly comparer: ComparerFunc<TSource>;
+	}
+
+	export interface IOrderedEnumerable<TSource> extends IEnumerable<TSource>/*, OrderedIterable<TSource>*/ {
+
+		thenBy<TKey>(keySelector: SelectorFunc<TSource, TKey>): IOrderedEnumerable<TSource>;
+
+		thenByDescending<TKey>(keySelector: SelectorFunc<TSource, TKey>): IOrderedEnumerable<TSource>
+	}
+
+
+
+	class IteratorIterableWrapper<T> implements Iterable<T> {
+
+		private _source: Iterator<T>;
+		private _buffer: T[];
+		private _buffered: boolean;
+
+		constructor(iterator: Iterator<T>) {
+			this._source = iterator;
+			this._buffer = [];
+			this._buffered = false;
+		}
+
+		public *[Symbol.iterator](): Iterator<T> {
+			if (this._buffered) {
+				for (const item of this._buffer) {
+					yield item;
+				}
+			}
+			else {
+				let item;
+				while (!(item = this._source.next()).done) {
+					this._buffer.push(item.value);
+					yield item.value;
+				}
+				this._buffered = true;
+			}
+		}
+	}
+
 
     class EnumerableExtensions {
 
@@ -525,26 +577,30 @@ namespace Linq {
             return new Enumerable(iterator);
         }
 
-        public static orderBy<TSource, TKey>(source: Iterable<TSource>, keySelector: SelectorFunc<TSource, TKey>): IEnumerable<TSource> {
-            var keyValueIterator = new KeyValueGenerator<TSource, TKey>(source, keySelector);
-            var orderedArray = [...keyValueIterator].sort((a, b) => {
-                if (a.key < b.key) return -1;
-                if (a.key > b.key) return 1;
-                return 0;
-            }).map(v => v.value);
-            var iterator = new SimpleIterator<TSource>(orderedArray);
-            return new Enumerable<TSource>(iterator);
+        public static orderBy<TSource, TKey>(source: Iterable<TSource>, keySelector: SelectorFunc<TSource, TKey>): IOrderedEnumerable<TSource> {
+			const orderByIterator = new OrderByIterator(source, keySelector, false);
+			return new OrderedEnumerable(orderByIterator);
+            // var keyValueIterator = new KeyValueGenerator<TSource, TKey>(source, keySelector);
+            // var orderedArray = [...keyValueIterator].sort((a, b) => {
+            //     if (a.key < b.key) return -1;
+            //     if (a.key > b.key) return 1;
+            //     return 0;
+            // }).map(v => v.value);
+            // var iterator = new SimpleIterator<TSource>(orderedArray);
+            // return new Enumerable<TSource>(iterator);
         }
 
-        public static orderByDescending<TSource, TKey>(source: Iterable<TSource>, keySelector: SelectorFunc<TSource, TKey>): IEnumerable<TSource> {
-            var keyValueIterator = new KeyValueGenerator<TSource, TKey>(source, keySelector);
-            var orderedArray = [...keyValueIterator].sort((a, b) => {
-                if (a.key < b.key) return 1;
-                if (a.key > b.key) return -1;
-                return 0;
-            }).map(v => v.value);
-            var iterator = new SimpleIterator<TSource>(orderedArray);
-            return new Enumerable<TSource>(iterator);
+        public static orderByDescending<TSource, TKey>(source: Iterable<TSource>, keySelector: SelectorFunc<TSource, TKey>): IOrderedEnumerable<TSource> {
+			const orderByIterator = new OrderByIterator(source, keySelector, true);
+			return new OrderedEnumerable(orderByIterator);
+            // var keyValueIterator = new KeyValueGenerator<TSource, TKey>(source, keySelector);
+            // var orderedArray = [...keyValueIterator].sort((a, b) => {
+            //     if (a.key < b.key) return 1;
+            //     if (a.key > b.key) return -1;
+            //     return 0;
+            // }).map(v => v.value);
+            // var iterator = new SimpleIterator<TSource>(orderedArray);
+            // return new Enumerable<TSource>(iterator);
         }
 
         public static prepend<TSource>(source: Iterable<TSource>, item: TSource): IEnumerable<TSource> {
@@ -558,12 +614,12 @@ namespace Linq {
         }
 
         public static repeat<TResult>(element: TResult, count: number): IEnumerable<TResult> {
-            var generator = new UserGenerator((index) => element, count, null);
+            var generator = new UserGenerator<TResult>((index) => element, count, null);
             return new Enumerable(generator);
         }
 
         public static repeatElement<TResult>(callback: (index: number) => TResult, count: number, userData?: any): IEnumerable<TResult> {
-            var generator = new UserGenerator(callback, count, userData);
+            var generator = new UserGenerator<TResult>(callback, count, userData);
             return new Enumerable(generator);
         }
 
@@ -692,6 +748,16 @@ namespace Linq {
             return new Enumerable(iterator);
         }
 
+		public static thenBy<TSource, TKey>(source: OrderedIterable<TSource>, keySelector: SelectorFunc<TSource, TKey>): IOrderedEnumerable<TSource> {
+			const thenByIterator = new ThenByIterator(source, keySelector, false);
+			return new OrderedEnumerable(thenByIterator);
+        }
+
+        public static thenByDescending<TSource, TKey>(source: OrderedIterable<TSource>, keySelector: SelectorFunc<TSource, TKey>): IOrderedEnumerable<TSource> {
+			const thenByIterator = new ThenByIterator(source, keySelector, true);
+			return new OrderedEnumerable(thenByIterator);
+        }
+
         public static toArray<TSource>(source: Iterable<TSource>): TSource[] {
             if (source instanceof Array)
                 return source;
@@ -777,6 +843,7 @@ namespace Linq {
             return new Enumerable(iterator);
         }
     }
+
 
     export abstract class IterableEnumerable<TSource> implements IEnumerable<TSource> {
 
@@ -979,11 +1046,11 @@ namespace Linq {
             return EnumerableExtensions.ofType(this, type);
         }
 
-        public orderBy<TField>(keySelector: SelectorFunc<TSource, TField>): IEnumerable<TSource> {
+        public orderBy<TKey>(keySelector: SelectorFunc<TSource, TKey>): IOrderedEnumerable<TSource> {
             return EnumerableExtensions.orderBy(this, keySelector);
         }
 
-        public orderByDescending<TField>(keySelector: SelectorFunc<TSource, TField>): IEnumerable<TSource> {
+        public orderByDescending<TKey>(keySelector: SelectorFunc<TSource, TKey>): IOrderedEnumerable<TSource> {
             return EnumerableExtensions.orderByDescending(this, keySelector);
         }
 
@@ -1052,10 +1119,6 @@ namespace Linq {
             return EnumerableExtensions.takeWhile(this, predicate);
         }
 
-        // TODO thenBy
-
-        // TODO thenByDescending
-
         public toArray(): TSource[] {
             return EnumerableExtensions.toArray(this);
         }
@@ -1112,13 +1175,18 @@ namespace Linq {
         }
 
 
-        private _source: Iterable<T>
+        protected _source: Iterable<T>
 
-        constructor(source: Iterable<T>) {
+        constructor(source: Iterable<T> | Iterator<T>) {
             super();
-            this._source = source;
+			if (isIterator(source)) {
+				this._source = new IteratorIterableWrapper(source);
+			}
+			else {
+				this._source = source;
+			}
+            
         }
-
 
         public *[Symbol.iterator](): Iterator<T> {
             for (let item of this._source) {
@@ -1126,4 +1194,21 @@ namespace Linq {
             }
         }
     }
+
+	export class OrderedEnumerable<T> 
+		extends Enumerable<T>
+		implements IOrderedEnumerable<T> {
+
+		constructor(source: OrderedIterable<T>) {
+			super(source);
+		}
+
+		public thenBy<TKey>(keySelector: SelectorFunc<T, TKey>): IOrderedEnumerable<T> {
+			return EnumerableExtensions.thenBy(this._source as OrderedIterable<T>, keySelector);
+		}
+
+		public thenByDescending<TKey>(keySelector: SelectorFunc<T, TKey>): IOrderedEnumerable<T> {
+			return EnumerableExtensions.thenByDescending(this._source as OrderedIterable<T>, keySelector);
+		}
+	}
 }
