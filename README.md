@@ -1,5 +1,9 @@
 # LINQ-G
 
+> In order to test the library in all its functionalities, a web application was created for the creation and execution of LINQ queries.
+> TRY-LINQ Project:
+> https://github.com/bit23/try-linq
+
 LINQ-G is a web library that implements LINQ.NET functionalities through the Generators made available with version 6 of the ECMAScript language. Specifically, the functionality of the LINQ-To-Object implementation has been replicated, so that queries can be applied to objects that satisfy the Iterable or Iterator protocols.
 
 The library has been written in Typescript, so a hierarchy of interfaces has been created which are the abstract representation of the types used. At the base of all there is the Iterable<T> interface, exposed by Typescript, which represents an object compatible with the Iterable protocol.
