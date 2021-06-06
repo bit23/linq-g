@@ -1,5 +1,9 @@
 # LINQ-G
 
+> Per poter testare la libreria in tutte le sue funzionalità è stata creata un'applicazione web per la creazione ed esecuzione di query LINQ.  
+> Progetto TRY-LINQ:
+> https://github.com/bit23/try-linq
+
 LINQ-G è una libreria per il web che implementa le funzionalità LINQ.NET tramite i Generatori resi disponibili con la versione 6 del linguaggio ECMAScript.
 Nello specifico sono state replicate le funzionalità dell'implementazione LINQ-To-Object, in modo da poter applicare le query su oggetti che soddisfano i protocolli Iterable o Iterator.
 
