@@ -1,8 +1,8 @@
-﻿/// <reference path="Functions.ts" />
+﻿/// <reference path="Types.ts" />
 
 namespace Linq {
 
-    export abstract class Generator<T> {
+    export abstract class Generator<T> implements Iterable<T> {
 
         protected _index: number;
         protected _current: T;

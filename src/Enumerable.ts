@@ -1,164 +1,12 @@
-/// <reference path="Functions.ts" />
+/// <reference path="Types.ts" />
 
 namespace Linq {
 
-	export function isEnumerable(object: any): object is Linq.IEnumerable<any> {
-		return object instanceof IterableEnumerable;
-	}
-
-	export function isGroupedEnumerable(object: any): object is Linq.GroupedEnumerable<any, any> {
-		return object instanceof GroupedEnumerable;
-	}
-
-	export function isIterator(object: any): object is Iterator<any> {
+	function isIterator(object: any): object is Iterator<any> {
 		return Reflect.has(object, "next") && typeof Reflect.get(object, "next") === "function";
 	}
 
-	export function composeComparers<T>(
-		firstComparer: (a: T, b: T) => number,
-		secondComparer: (a: T, b: T) => number
-	) : ((a: T, b: T) => number) {
-		return (a: T, b: T) => firstComparer(a, b) || secondComparer(a, b);
-	}
-
 	
-
-    export interface IEnumerable<TSource> extends Iterable<TSource> {
-
-        aggregate<TAccumulate, TResult = TAccumulate>(func: AccumulatorFunc<TAccumulate, TSource, TAccumulate>): TResult;
-        aggregate<TAccumulate, TResult = TAccumulate>(seed: TAccumulate, func: AccumulatorFunc<TAccumulate, TSource, TAccumulate>): TResult;
-        aggregate<TAccumulate, TResult = TAccumulate>(seed: TAccumulate, func: AccumulatorFunc<TAccumulate, TSource, TAccumulate>, resultSelector: SelectorFunc<TAccumulate, TResult>): TResult;
-
-        all(predicate: PredicateFunc<TSource>): boolean;
-
-        any(predicate?: PredicateFunc<TSource>): boolean;
-
-        append(item: TSource): IEnumerable<TSource>;
-
-        /*NON STANDARD*/average(ignoreNonNumberItems ?: boolean): number;
-        average(selector ?: SelectorFunc<TSource, number>): number;
-
-        concat(sequence: Iterable<TSource>): IEnumerable<TSource>;
-
-        contains(value: TSource, comparer?: EqualityComparerFunc<TSource>): boolean;
-
-        count(predicate?: PredicateFunc<TSource>): number;
-
-        defaultIfEmpty(defaultValue: TSource): IEnumerable<TSource>;
-
-        distinct(): IEnumerable<TSource>;
-
-        elementAt(index: number): TSource;
-
-        elementAtOrDefault(index: number): TSource;
-
-        except(sequence: Iterable<TSource>): IEnumerable<TSource>;
-
-        first(predicate?: PredicateFunc<TSource>): TSource;
-
-        firstOrDefault(predicate: PredicateFunc<TSource>): TSource;
-
-        groupBy<TKey>(keySelector: SelectorFunc<TSource, TKey>): IEnumerable<IGrouping<TKey, TSource>>;
-        groupBy<TKey, TElement = TSource>(keySelector: SelectorFunc<TSource, TKey>, elementSelector: SelectorFunc<TSource, TElement>): IEnumerable<IGrouping<TKey, TElement>>;
-        groupBy<TKey, TElement = TSource, TResult = TElement>(keySelector: SelectorFunc<TSource, TKey>, elementSelector: SelectorFunc<TSource, TElement>, resultSelector: GroupResultSelectorFunc<TKey, TElement, TResult>): IEnumerable<IGrouping<TKey, TResult>>;
-
-        // groupByWithCompare<TKey>(keySelector: SelectorFunc<TSource, TKey>, comparer: EqualityComparerFunc<TKey>): IEnumerable<IGrouping<TKey, TSource>>;
-        // groupByWithCompare<TKey, TElement = TSource>(keySelector: SelectorFunc<TSource, TKey>, elementSelector: SelectorFunc<TSource, TElement>, comparer: EqualityComparerFunc<TKey>): IEnumerable<IGrouping<TKey, TElement>>;
-        // groupByWithCompare<TKey, TElement = TSource, TResult = TElement>(keySelector: SelectorFunc<TSource, TKey>, elementSelector: SelectorFunc<TSource, TElement>, resultSelector: ResultSelectorFunc<TKey, Iterable<TElement>, TResult>, comparer: EqualityComparerFunc<TKey>): IEnumerable<IGrouping<TKey, TResult>>;
-
-        groupJoin<TKey, TInner, TResult>(
-            innerSequence: Iterable<TInner>,
-            outerKeySelector: SelectorFunc<TSource, TKey>,
-            innerKeySelector: SelectorFunc<TInner, TKey>,
-            resultSelector: ResultSelectorFunc<TSource, Iterable<TInner>, TResult>,
-            comparer: EqualityComparerFunc<TKey>
-        ): IEnumerable<TResult>;
-
-        intersect(sequence: Iterable<TSource>): IEnumerable<TSource>;
-
-        join<TKey, TInner, TResult>(
-            innerSequence: Iterable<TInner>,
-            outerKeySelector: SelectorFunc<TSource, TKey>,
-            innerKeySelector: SelectorFunc<TInner, TKey>,
-            resultSelector: ResultSelectorFunc<TSource, TInner, TResult>,
-            comparer?: EqualityComparerFunc<TKey>
-        ): IEnumerable<TResult>;
-
-        last(predicate: PredicateFunc<TSource>): TSource;
-
-        lastOrDefault(predicate: PredicateFunc<TSource>): TSource;
-
-        /*NON STANDARD*/max(ignoreNonNumberItems ?: boolean): number;
-        max(selector ?: SelectorFunc<TSource, number>): number;
-
-        /*NON STANDARD*/min(ignoreNonNumberItems ?: boolean): number;
-        min(selector ?: SelectorFunc<TSource, number>): number;
-
-        ofType<TResult>(type: new () => TResult): IEnumerable<TResult>;
-
-        orderBy<TKey>(keySelector: SelectorFunc<TSource, TKey>): IOrderedEnumerable<TSource>;
-
-        orderByDescending<TKey>(keySelector: SelectorFunc<TSource, TKey>): IOrderedEnumerable<TSource>;
-
-        prepend(item: TSource): IEnumerable<TSource>;
-
-        reverse(): IEnumerable<TSource>;
-
-        select<TResult>(selector: SelectorFunc<TSource, TResult>): IEnumerable<TResult>;
-
-        selectMany<TResult>(selector: SelectorFunc<TSource, Iterable<TResult>>): IEnumerable<TResult>;
-
-        sequenceEqual(other: Iterable<TSource>, comparer?: EqualityComparerFunc<TSource>): boolean;
-
-        single(predicate?: PredicateFunc<TSource>): TSource;
-
-        singleOrDefault?(predicate: PredicateFunc<TSource>): TSource;
-
-        skip(count: number): IEnumerable<TSource>;
-
-        skipLast(count: number): IEnumerable<TSource>;
-
-        skipWhile(predicate: PredicateFunc<TSource>): IEnumerable<TSource>;
-
-        /*NON STANDARD*/sum(ignoreNonNumberItems ?: boolean): number;
-        sum(selector?: SelectorFunc<TSource, number>): number;
-
-        take(count: number): IEnumerable<TSource>;
-
-        takeLast(count: number): IEnumerable<TSource>;
-
-        takeWhile(predicate: PredicateFunc<TSource>): IEnumerable<TSource>;
-
-        toArray(): TSource[];
-
-        toDictionary<TKey, TValue>(
-            keySelector: SelectorFunc<TSource, TKey>,
-            elementSelector: SelectorFunc<TSource, TValue>,
-            comparer: EqualityComparerFunc<TKey>
-        ): Map<TKey, TValue>;
-
-        //toLookup<TKey, TElement = TSource>(keySelector: SelectorFunc<TSource, TKey>, elementSelector?: SelectorFunc<TSource, TElement>, comparer?: EqualityComparerFunc<TKey>): ILookup<TKey, TElement>;
-
-        union(sequence: Iterable<TSource>): IEnumerable<TSource>;
-
-        where(predicate: PredicateFunc<TSource>): IEnumerable<TSource>;
-
-        zip<TSecond, TResult>(sequence: Iterable<TSecond>, resultSelector: ResultSelectorFunc<TSource, TSecond, TResult>): IEnumerable<TResult>;
-    }
-
-	export interface OrderedIterable<TSource> extends Iterable<TSource> {
-		readonly comparer: ComparerFunc<TSource>;
-	}
-
-	export interface IOrderedEnumerable<TSource> extends IEnumerable<TSource>/*, OrderedIterable<TSource>*/ {
-
-		thenBy<TKey>(keySelector: SelectorFunc<TSource, TKey>): IOrderedEnumerable<TSource>;
-
-		thenByDescending<TKey>(keySelector: SelectorFunc<TSource, TKey>): IOrderedEnumerable<TSource>
-	}
-
-
-
 	class IteratorIterableWrapper<T> implements Iterable<T> {
 
 		private _source: Iterator<T>;
@@ -841,8 +689,10 @@ namespace Linq {
         public static zip<TFirst, TSecond, TResult>(source: Iterable<TFirst>, sequence: Iterable<TSecond>, selector: ResultSelectorFunc<TFirst, TSecond, TResult>): IEnumerable<TResult> {
             var iterator = new ZipIterator(source, sequence, selector);
             return new Enumerable(iterator);
+			Enumerable.fromGenerator(function* () { yield 1; });
         }
     }
+
 
 
     export abstract class IterableEnumerable<TSource> implements IEnumerable<TSource> {
@@ -894,7 +744,8 @@ namespace Linq {
             return EnumerableExtensions.append(this, item);
         }
 
-        /*NON STANDARD*/public average(ignoreNonNumberItems?: boolean): number;
+        /*NON STANDARD*/
+		public average(ignoreNonNumberItems?: boolean): number;
         public average(selector?: SelectorFunc<TSource, number>): number;
         public average(selectorOrIgnore?: SelectorFunc<TSource, number> | boolean): number {
             let selectorArg: SelectorFunc<TSource, number>;
@@ -947,6 +798,10 @@ namespace Linq {
         public firstOrDefault(predicate: PredicateFunc<TSource>): TSource {
             return EnumerableExtensions.firstOrDefault(this, predicate);
         }
+
+		public getEnumerator(): IEnumerator<TSource> {
+			return new Enumerator(this);
+		}
 
         public groupBy<TKey>(keySelector: SelectorFunc<TSource, TKey>): IEnumerable<IGrouping<TKey, TSource>>;
         public groupBy<TKey, TElement = TSource>(keySelector: SelectorFunc<TSource, TKey>, elementSelector: SelectorFunc<TSource, TElement>): IEnumerable<IGrouping<TKey, TElement>>;
@@ -1016,7 +871,8 @@ namespace Linq {
             return EnumerableExtensions.lastOrDefault(this, predicate);
         }
 
-        /*NON STANDARD*/public max(ignoreNonNumberItems?: boolean): number;
+        /*NON STANDARD*/
+		public max(ignoreNonNumberItems?: boolean): number;
         public max(selector?: SelectorFunc<TSource, number>): number;
         public max(selectorOrIgnore?: SelectorFunc<TSource, number> | boolean): number {
             let selectorArg: SelectorFunc<TSource, number>;
@@ -1029,7 +885,8 @@ namespace Linq {
             return EnumerableExtensions.max(this, selectorArg, ignoreNonNumber);
         }
 
-        /*NON STANDARD*/public min(ignoreNonNumberItems?: boolean): number;
+        /*NON STANDARD*/
+		public min(ignoreNonNumberItems?: boolean): number;
         public min(selector?: SelectorFunc<TSource, number>): number;
         public min(selectorOrIgnore?: SelectorFunc<TSource, number> | boolean): number {
             let selectorArg: SelectorFunc<TSource, number>;
@@ -1094,7 +951,8 @@ namespace Linq {
             return EnumerableExtensions.skipWhile(this, predicate);
         }
 
-        /*NON STANDARD*/public sum(ignoreNonNumberItems?: boolean): number;
+        /*NON STANDARD*/
+		public sum(ignoreNonNumberItems?: boolean): number;
         public sum(selector?: SelectorFunc<TSource, number>): number;
         public sum(selectorOrIgnore?: SelectorFunc<TSource, number> | boolean) {
             let selectorArg: SelectorFunc<TSource, number>;
@@ -1152,10 +1010,16 @@ namespace Linq {
         extends IterableEnumerable<T>
         implements IEnumerable<T> {
 
-        public static from<TSource>(source: Iterable<TSource>): IEnumerable<TSource> {
+		
+        public static from<TSource>(source: EnumerableSource<TSource>): IEnumerable<TSource> {
             // TODO perform checks
             return new Enumerable(source);
         }
+
+		public static fromGenerator<TSource, TResult = TSource, TNext = undefined>(source: () => globalThis.Generator<TSource, TResult, TNext>) {
+			const iterator = source();
+			return new Enumerable(iterator);
+		}
 
         public static range(start: number, end: number): IEnumerable<number>;
         public static range(start: number, end: number, step?: number): IEnumerable<number> {
@@ -1177,7 +1041,7 @@ namespace Linq {
 
         protected _source: Iterable<T>
 
-        constructor(source: Iterable<T> | Iterator<T>) {
+        constructor(source: EnumerableSource<T>) {
             super();
 			if (isIterator(source)) {
 				this._source = new IteratorIterableWrapper(source);
@@ -1185,7 +1049,6 @@ namespace Linq {
 			else {
 				this._source = source;
 			}
-            
         }
 
         public *[Symbol.iterator](): Iterator<T> {
@@ -1196,11 +1059,14 @@ namespace Linq {
     }
 
 	export class OrderedEnumerable<T> 
-		extends Enumerable<T>
+		extends IterableEnumerable<T>
 		implements IOrderedEnumerable<T> {
 
+		protected _source: OrderedIterable<T>
+
 		constructor(source: OrderedIterable<T>) {
-			super(source);
+            super();
+			this._source = source;
 		}
 
 		public thenBy<TKey>(keySelector: SelectorFunc<T, TKey>): IOrderedEnumerable<T> {
@@ -1210,5 +1076,11 @@ namespace Linq {
 		public thenByDescending<TKey>(keySelector: SelectorFunc<T, TKey>): IOrderedEnumerable<T> {
 			return EnumerableExtensions.thenByDescending(this._source as OrderedIterable<T>, keySelector);
 		}
+
+		public *[Symbol.iterator](): Iterator<T> {
+            for (let item of this._source) {
+                yield item;
+            }
+        }
 	}
 }

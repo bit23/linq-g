@@ -7,9 +7,7 @@ namespace Linq {
         }
     }
 
-    export interface IGrouping<TKey, TElement> extends IEnumerable<TElement> {
-        readonly key: TKey;
-    }
+    
 
     export class Grouping<TKey, TElement>
         extends IterableEnumerable<TElement>

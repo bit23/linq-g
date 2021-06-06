@@ -2,12 +2,6 @@
 
 namespace Linq {
 
-    export interface SourceIterator<T> extends Iterable<T> {
-        readonly index: number;
-        readonly current: T;
-        [Symbol.iterator](): Iterator<T>;
-    }
-
     export abstract class BaseIterator<TSource> implements SourceIterator<TSource>  {
 
         protected _index: number = -1;
@@ -63,6 +57,7 @@ namespace Linq {
 
         public abstract [Symbol.iterator](): Iterator<TResult>;
     }
+
 
     export class SimpleIterator<TSource> extends BaseIterator<TSource> {
 
@@ -353,40 +348,6 @@ namespace Linq {
             this.reset();
         }
     }
-
-    // export class GroupJoinResultIterator<TSource, TKey, TInner = TSource, TResult = TInner>
-    //     extends SourceResultIterator<TSource, TResult> {
-
-    //     private _keySelector: SelectorFunc<TSource, TKey>;
-    //     private _innerSequence: Iterable<TInner>;
-    //     private _innerKeySelector: SelectorFunc<TInner, TKey>;
-    //     private _resultSelector: GroupResultSelectorFunc<TSource, TInner, TResult>;
-
-    //     constructor(
-    //         iterable: Iterable<TSource>,
-    //         keySelector: SelectorFunc<TSource, TKey>,
-    //         innerSequence: Iterable<TInner>,
-    //         innerKeySelector: SelectorFunc<TInner, TKey>,
-    //         resultSelector: GroupResultSelectorFunc<TSource, TInner, TResult>
-    //     ) {
-    //         super(iterable);
-    //         this._keySelector = keySelector;
-    //         this._innerSequence = innerSequence;
-    //         this._innerKeySelector = innerKeySelector;
-    //         this._resultSelector = resultSelector;
-    //     }
-
-    //     public *[Symbol.iterator](): Iterator<TResult> {
-    //         let lookup = Lookup.createForJoin<TKey, TInner>(this._innerSequence, this._innerKeySelector);
-    //         for (let item of this.iterable) {
-    //             let key = this._keySelector(item);
-    //             yield this._resultSelector(item, lookup.item(key));
-    //         }
-    //         this.reset();
-    //     }
-    // }
-
-    // JoinIterator
 
     export class IntersectIterator<T> extends BaseIterator<T> {
 
@@ -901,8 +862,6 @@ namespace Linq {
             this._chachedNodeIteration = null;
         }
     }
-
-
 	
 
 	export class OrderedIterator<TSource> 
@@ -939,6 +898,13 @@ namespace Linq {
         }
 	}
 
+	function composeComparers<T>(
+		firstComparer: (a: T, b: T) => number,
+		secondComparer: (a: T, b: T) => number
+	) : ((a: T, b: T) => number) {
+		return (a: T, b: T) => firstComparer(a, b) || secondComparer(a, b);
+	}
+
 	export class ThenByIterator<TSource, TKey> extends OrderedIterator<TSource> {
 
 		constructor(iterable: OrderedIterable<TSource>, keySelector: SelectorFunc<TSource, TKey>, descending = false) {
@@ -951,57 +917,4 @@ namespace Linq {
 			);
         }
 	}
-
-	// export class OrderByIterator<TSource, TKey> extends BaseIterator<TSource> {
-
-	// 	protected _keySelector: SelectorFunc<TSource, TKey>;
-	// 	protected _descending: boolean;
-	// 	protected _comparer: ComparerFunc<TSource>;
-
-	// 	constructor(iterable: Iterable<TSource>, keySelector: SelectorFunc<TSource, TKey>, descending = false) {
-    //         super(iterable);
-    //         this._keySelector = keySelector;
-	// 		this._descending = descending;
-
-	// 		this._comparer = this.createComparer(this._keySelector, this._descending);
-    //     }
-
-	// 	protected createComparer(keySelector: SelectorFunc<TSource, TKey>, descending: boolean): ComparerFunc<TSource> {
-	// 		return (a, b) => {
-	// 			const aKey = keySelector(a);
-	// 			const bKey = keySelector(b);
-	// 			if (aKey > bKey) return descending ? -1 : 1;
-	// 			if (aKey < bKey) return descending ? 1 : -1;
-	// 			return 0;
-	// 		};
-	// 	}
-
-	// 	public get keySelector() { return this._keySelector; }
-
-	// 	public get descending() { return this._descending; }
-
-	// 	public *[Symbol.iterator](): Iterator<TSource> {
-	// 		const orderedSource = [...this.iterable].sort(this._comparer);
-	// 		yield* orderedSource;
-	// 	}
-	// }
-
-	// export class ThenByIterator<TSource, TKey> extends OrderByIterator<TSource, TKey> {
-
-	// 	private _currentKeySelector: SelectorFunc<TSource, TKey>;
-	// 	private _currentComparer: ComparerFunc<TSource>;
-
-	// 	constructor(iterable: OrderByIterator<TSource, TKey>, keySelector: SelectorFunc<TSource, TKey>, descending = false) {
-    //         super(iterable, iterable.keySelector, descending);
-	// 		this._currentKeySelector = keySelector;
-
-	// 		const localComparer = this.createComparer(keySelector, descending);
-	// 		this._currentComparer = composeComparers(this._comparer, localComparer);
-    //     }
-
-	// 	public *[Symbol.iterator](): Iterator<TSource> {
-	// 		const orderedSource = [...this.iterable].sort(this._currentComparer);
-	// 		yield* orderedSource;
-	// 	}
-	// }
 }

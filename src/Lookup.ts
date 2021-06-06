@@ -7,11 +7,6 @@ namespace Linq {
         }
     }
     
-    export interface ILookup<TKey, TElement> {
-        readonly count: number;
-        item(key: TKey): Iterable<TElement>;
-        contains(key: TKey): boolean;
-	}
 
     export class Lookup<TKey, TElement, TResult = TElement> implements ILookup<TKey, TResult>, Iterable<IGrouping<TKey, TResult>> {
 
