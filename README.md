@@ -1,9 +1,8 @@
 # LINQ-G
 
-LINQ-G è una libreria per il web che implementa le funzionalità LINQ.NET tramite i Generatori resi disponibili con la versione 6 del linguaggio ECMAScript.
-Nello specifico sono state replicate le funzionalità dell'implementazione LINQ-To-Object, in modo da poter applicare le query su oggetti che soddisfano i protocolli Iterable o Iterator.
+LINQ-G is a web library that implements LINQ.NET functionalities through the Generators made available with version 6 of the ECMAScript language. Specifically, the functionality of the LINQ-To-Object implementation has been replicated, so that queries can be applied to objects that satisfy the Iterable or Iterator protocols.
 
-La libreria è stata scritta in Typescript, pertanto è stata realizzata una gerarchia di interfacce che sono la rappresentazione astratta dei tipi utilizzati. Alla base di tutto c’è l’interfaccia ```Iterable<T>```, esposta da Typescript, che rappresenta un oggetto compatibile con il protocollo Iterable.
+The library has been written in Typescript, so a hierarchy of interfaces has been created which are the abstract representation of the types used. At the base of all there is the Iterable<T> interface, exposed by Typescript, which represents an object compatible with the Iterable protocol.
 
 ```Typescript
 interface IEnumerable<TSource> extends Iterable<TSource>
@@ -13,26 +12,26 @@ interface OrderedIterable<TSource> extends Iterable<TSource>
 interface SourceIterator<T> extends Iterable<T>
 ```
 
-L’interfaccia più significativa in questo elenco è ```IEnumerable<T>``` in quanto è il tipo di base restituito da tutte le funzioni LINQ che producono sequenze di valori. Questo rende possibile concatenare più funzioni prima di ottenere il risultato elaborato.
+The most significant interface in this list is IEnumerable<T> since it is the base type returned by all LINQ functions that produce sequences of values. This makes it possible to concatenate multiple functions before getting the processed result.
 
-Esempio:
+Example:
 
 ```Typescript
 data
-  .where(x => x.lastName === “Rossi”)  // restituisce IEnumerable<...>
-  .orderBy(x => x.firstName)  // restituisce IOrderedEnumerable<...>
-  .groupBy(x => x.city) // restituisce IEnumerable<IGrouping<...>>
+  .where(x => x.lastName === “Rossi”)  // returns IEnumerable<...>
+  .orderBy(x => x.firstName)  // returns IOrderedEnumerable<...>
+  .groupBy(x => x.city) // returns IEnumerable<IGrouping<...>>
 ```
 
-Quello che segue è l’elenco dei metodi presenti nell’interfaccia ```IEnumerable<T>``` che di  conseguenza verranno implementati in tutte le istanze delle classi che rappresentano i risultati:
+What follows is the list of methods in the IEnumerable<T> interface that will consequently be implemented in all instances of the classes representing the results:
 
 > aggregate, all, any, append, average, concat, contains, count, defaultIfEmpty, distinct, elementAt, elementAtOrDefault, except, first, firstOrDefault, groupBy, groupJoin, intersect, join, last, lastOrDefault, max, min, ofType, orderBy, orderByDescending, prepend, reverse, select, selectMany, sequenceEqual, single, singleOrDefault, skip, skipLast, skipWhile, sum, take, takeLast, takeWhile, toArray, toDictionary, union, where, zip
 
-Per l’interfaccia ```IOrderedEnumerable<T>``` si aggiungono ai precedenti i seguenti metodi:
+For the IOrderedEnumerable<T> interface, the following methods are added to the previous ones:
 
 > thenBy, thenByDescending
 
-Le classi che rappresentano i risultati e che di conseguenza implementano le interfacce già viste, sono:
+The classes that represent the results and consequently implement the interfaces already seen, are:
 
 ```Typescript
 abstract class IterableEnumerable<TSource> implements IEnumerable<TSource>
@@ -48,15 +47,13 @@ class GroupedEnumerable<TSource, TKey, TElement = TSource> extends IterableEnume
 class GroupedResultEnumerable<TSource, TKey, TElement, TResult> extends IterableEnumerable<TResult> implements IEnumerable<TResult>
 ```
 
-L’architettura delle classi è leggermente più articolata di quella delle interfacce ma non viene esposto nessun metodo aggiuntivo, se non alcuni metodi statici della classe ```Enumerable<T>```:
+The class architecture is slightly more articulated than that of the interfaces, but no additional methods are exposed, other than some static methods of the Enumerable<T> class:
 
 > empty, from, fromGenerator, range, repeat, repeatElement
 
-Tutte le chiamate si trovano nella classe astratta di base ```IterableEnumerable<T>``` e contengono solo un rimando alla reale implementazione che si trova nella classe statica ```EnumerableExtensions```.
+All calls are in the abstract base class IterableEnumerable<T> and contain only a reference to the actual implementation found in the static class EnumerableExtensions.
 
-E’ da qui in poi che possiamo trovare il grosso del “lavoro”, nell’implementazione dei singoli metodi, variabile in funzione del tipo operazione e del tipo di risultato.
-A supporto dei metodi, in alcuni casi esistono delle classi specializzate che si occupano di scorrere i valori e filtrarli/trasformarli/organizzarli e produrre i risultati.
-Questo ulteriore livello di interfacce e classi coinvolte sono definite come SouceIterator(s) e tutti fanno riferimento all’interfaccia ```SourceIterator<T>```:
+It is from here on that we can find the bulk of the "work", in the implementation of the individual methods, varying according to the type of operation and the type of result. To support the methods, in some cases there are specialized classes involved in scrolling through the values and filtering/transforming/organizing them and producing the results. This additional layer of interfaces and classes involved are defined as SouceIterator(s) and all refer to the SourceIterator<T> interface:
 
 ```Typescript
 interface SourceIterator<T> extends Iterable<T> {
@@ -66,7 +63,7 @@ interface SourceIterator<T> extends Iterable<T> {
 }
 ```
 
-Una delle implementazioni di questa interfaccia, come classe di base della maggior parte dei SourceIterator, è la classe astratta ```BaseIterator<T>```:
+One of the implementations of this interface, as the base class of most SourceIterators, is the abstract class BaseIterator<T>:
 
 ```Typescript
 abstract class BaseIterator<TSource> implements SourceIterator<TSource>  {
@@ -98,9 +95,9 @@ abstract class BaseIterator<TSource> implements SourceIterator<TSource>  {
 }
 ```
 
-Dato che SouceIterator estende l’interfaccia ```Iterable<T>```, di conseguenza esporrà il metodo ```[Symbol.iterator](): Iterator<T>``` che permetterà di scorrere gli elementi.  
-Durante lo scorrimento degli elementi da parte di un ciclo, l’iteratore, nell'implementazione del caso, eseguirà le proprie operazioni sull’elemento restituendolo e mettendo in pausa il ciclo interno sfruttando il meccanismo di pause e resume delle funzioni generatrici.  
-Se prendiamo ad esempio la classe ```TakeIterator<T>```, che si occupa di restituire i primi n elementi di un oggetto iterabile (o meno se non presenti), possiamo notare l'utilizzo della parola chiave ```yield``` che restituisce il valore ennesimo e interrompe momentaneamente l'esecuzione del codice, per poi proseguire da quel punto al momento della richiesta del successivo elemento da parte del ciclo chiamante.
+Since SouceIterator extends the Iterable<T> interface, it will consequently expose the [Symbol.iterator]() method: Iterator<T> that will allow scrolling of elements.
+During the scrolling of the elements by a loop, the iterator, in the implementation of the case, will perform its operations on the element by returning it and pausing the inner loop by exploiting the pause and resume mechanism of the generating functions.  
+If we take as an example the class TakeIterator<T>, which deals with returning the first n elements of an iterable object (or not if not present), we can notice the use of the yield keyword that returns the nth value and momentarily interrupts the execution of the code, and then continues from that point at the time of the request of the next element by the calling loop.
 
 ```Typescript
 class TakeIterator<T> extends BaseIterator<T> {
@@ -126,14 +123,12 @@ class TakeIterator<T> extends BaseIterator<T> {
 }
 ```
 
-Per quanto l'architettura possa sembrare molto articolata, dal punto di vista dell’utilizzatore tutta questa complessità non è visibile in quanto l’uso di tutte queste classi è demandato all’implementazione interna della libreria.
-Lo sviluppatore infatti avrà sempre a che fare solo con l’interfaccia ```IEnumerable<T>``` (con le sue varianti) e i metodi da questa esposta, tutto il resto è importante solo ai fini della comprensione del funzionamento e della creazione di eventuali metodi e iteratori custom.
+As much as the architecture may seem very articulated, from the user's point of view all this complexity is not visible because the use of all these classes is delegated to the internal implementation of the library. The developer in fact will always have to deal only with the IEnumerable<T> interface (with its variants) and the methods exposed by it, all the rest is important only for the understanding of the operation and the creation of any methods and custom iterators.
 
-## ESEMPI D'USO
+## USAGE EXAMPLES
 
-La prima operazione da fare per poter accedere alle funzionalità di LINQ è di trasformare l’oggetto sorgente in un ```Enumerable```. E’ possibile creare istanze di ```Enumerable``` a partire da diverse fonti, l’unica condizione necessaria è che l’oggetto sorgente implementi il comportamento di Iterable o di Iterator (in questo caso verrà wrappato in un oggetto interno che lo renderà Iterable).
-Per fare questo basterà chiamare il metodo statico ```Enumerable.from(...)``` passandogli l’oggetto sorgente.  
-Prendiamo ad esempio un array di oggetti che rappresentano semplici informazioni su di un frutto:
+The first operation to do in order to access LINQ functionality is to transform the source object into an Enumerable. It is possible to create Enumerable instances from different sources, the only necessary condition is that the source object implements the Iterable or Iterator behavior (in this case it will be wrapped in an internal object that will make it Iterable). To do this, just call the static method Enumerable.from(...) passing it the source object.
+Let's take for example an array of objects representing simple information about a fruit:
 
 ```Typescript
 const fruits = [
@@ -188,13 +183,13 @@ const fruits = [
 ]
 ```
 
-Wrappa l'oggetto sorgente in un Enumerable:
+Wraps the source object into an Enumerable:
 
 ```Typescript
 const enumerable = Enumerable.from(fruits);
 ```
 
-Ordina e raggruppa le informazioni:
+Sort and group information:
 
 ```Typescript
 const result = enumerable 
