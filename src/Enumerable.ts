@@ -207,20 +207,43 @@ namespace Linq {
         }
 
         public static count<TSource>(source: Iterable<TSource>, predicate?: PredicateFunc<TSource>): number {
-            if (!predicate) {
-                if (source instanceof Array)
-                    return source.length;
-                return [...source].length;
-            }
-            else {
-                var count = 0;
-                for (let element of source) {
-                    if (predicate(element)) {
-                        count++;
-                    }
-                }
-                return count;
-            }
+			if (source instanceof Enumerable || source instanceof OrderedEnumerable) {
+				return source.count(predicate);
+			}
+			return countIterable(source, predicate);
+            // if (!predicate) {
+			// 	if (source instanceof Array) {
+			// 		return source.length;
+			// 	}
+			// 	else if (source instanceof Set) {
+			// 		return source.size;
+			// 	}
+			// 	else if (source instanceof Map) {
+			// 		return source.size;
+			// 	}
+            //     else {
+            //     	//return [...source].length;
+			// 		let count = 0;
+			// 		for (let element of source) {
+			// 			count++;
+			// 		}
+			// 		return count;
+			// 	}
+            // }
+            // else {
+			// 	if (source instanceof Array) {
+			// 		return source.filter(predicate).length;
+			// 	}
+			// 	else {
+			// 		let count = 0;
+			// 		for (let element of source) {
+			// 			if (predicate(element)) {
+			// 				count++;
+			// 			}
+			// 		}
+			// 		return count;
+			// 	}
+            // }
         }
 
         public static defaultIfEmpty<TSource>(source: Iterable<TSource>, defaultValue: TSource): IEnumerable<TSource> {
@@ -689,7 +712,6 @@ namespace Linq {
         public static zip<TFirst, TSecond, TResult>(source: Iterable<TFirst>, sequence: Iterable<TSecond>, selector: ResultSelectorFunc<TFirst, TSecond, TResult>): IEnumerable<TResult> {
             var iterator = new ZipIterator(source, sequence, selector);
             return new Enumerable(iterator);
-			Enumerable.fromGenerator(function* () { yield 1; });
         }
     }
 
@@ -766,9 +788,11 @@ namespace Linq {
             return EnumerableExtensions.contains(this, value, comparer);
         }
 
-        public count(predicate?: PredicateFunc<TSource>): number {
-            return EnumerableExtensions.count(this, predicate);
-        }
+        // public count(predicate?: PredicateFunc<TSource>): number {
+		// 	return countIterable(this, predicate);
+        //     //return EnumerableExtensions.count(this, predicate);
+        // }
+		public abstract count(predicate?: PredicateFunc<TSource>): number;
 
         public defaultIfEmpty(defaultValue: TSource): IEnumerable<TSource> {
             return EnumerableExtensions.defaultIfEmpty(this, defaultValue);
@@ -1051,6 +1075,10 @@ namespace Linq {
 			}
         }
 
+		public count(predicate: PredicateFunc<T>) {
+			return countIterable(this._source, predicate);
+		}
+
         public *[Symbol.iterator](): Iterator<T> {
             for (let item of this._source) {
                 yield item;
@@ -1075,6 +1103,10 @@ namespace Linq {
 
 		public thenByDescending<TKey>(keySelector: SelectorFunc<T, TKey>): IOrderedEnumerable<T> {
 			return EnumerableExtensions.thenByDescending(this._source as OrderedIterable<T>, keySelector);
+		}
+
+		public count(predicate: PredicateFunc<T>) {
+			return countIterable(this._source, predicate);
 		}
 
 		public *[Symbol.iterator](): Iterator<T> {

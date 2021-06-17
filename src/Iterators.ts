@@ -123,6 +123,48 @@ namespace Linq {
         }
     }
 
+	export class CountIterator<T> extends BaseIterator<T> {
+
+        private _predicate?: PredicateFunc<T>;
+		private _computedCount: number;
+
+        constructor(iterable: Iterable<T>, predicate?: PredicateFunc<T>) {
+            super(iterable);
+			this._computedCount = -1;
+            this._predicate = predicate;
+        }
+
+        public *[Symbol.iterator](): Iterator<T> {
+			if (this.iterable instanceof Array) {
+				this._computedCount = this.iterable.length;
+			}
+			else if (this.iterable instanceof Set) {
+				this._computedCount = this.iterable.size;
+			}
+			else if (this.iterable instanceof Map) {
+				this._computedCount = this.iterable.size;
+			}
+			else {
+				let count = 0;
+				for (const element of this.iterable) {
+					count++;
+				}
+				this._computedCount = count;
+			}
+            for (let element of this.iterable) {
+                this._index++;
+                let valid = this._predicate(element, this.index);
+                if (valid) {
+                    this._current = element;
+                    yield element;
+                }
+            }
+            this.reset();
+        }
+
+		public get count() { return this._computedCount; }
+    }
+
     export class DefaultIfEmptyIterator<T> extends BaseIterator<T> {
 
         private _defaultValue: T;

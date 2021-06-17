@@ -23,6 +23,10 @@ namespace Linq {
 
         public readonly key: TKey;
 
+		public count(predicate: PredicateFunc<TElement>) {
+			return Linq.countIterable(this.#elements, predicate);
+		}
+
         public *[Symbol.iterator](): Iterator<TElement> {
 			//return this.#elements;
             for (const element of this.#elements) {
@@ -54,12 +58,19 @@ namespace Linq {
             //this._comparer = comparer;
         }
 
-        public *[Symbol.iterator](): Iterator<IGrouping<TKey, TElement>> {
-            if(this._lookup == null) {
+		private _getOrCreateLookup() {
+			if(this._lookup == null) {
                 this._lookup = Lookup.create(this._source, this._keySelector, this._elementSelector);
             }
-            //return this._lookup;
-            for (const element of this._lookup) {
+			return this._lookup;
+		}
+
+		public count(predicate: PredicateFunc<IGrouping<TKey, TElement>>) {
+			return Linq.countIterable(this._getOrCreateLookup(), predicate);
+		}
+
+        public *[Symbol.iterator](): Iterator<IGrouping<TKey, TElement>> {
+            for (const element of this._getOrCreateLookup()) {
                 yield element;
             }
         }
@@ -90,11 +101,19 @@ namespace Linq {
             //this._comparer = comparer;
         }
 
-        public *[Symbol.iterator](): Iterator<TResult> {
-            if(this._lookup == null) {
+		private _getOrCreateLookup() {
+			if(this._lookup == null) {
                 this._lookup = Lookup.create(this._source, this._keySelector, this._elementSelector);
             }
-            for (const element of this._lookup) {
+			return this._lookup;
+		}
+
+		public count(predicate: PredicateFunc<TResult>) {
+			return Linq.countIterable(this, predicate);
+		}
+
+        public *[Symbol.iterator](): Iterator<TResult> {
+            for (const element of this._getOrCreateLookup()) {
                 yield this._resultSelector(element.key, element)
             }
         }
