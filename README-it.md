@@ -229,6 +229,3 @@ const result = enumerable
 
 ```
 
-## PERFORMANCES
-
-TODO
