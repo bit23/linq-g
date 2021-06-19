@@ -4,7 +4,7 @@
 > Progetto TRY-LINQ:
 > https://github.com/bit23/try-linq
 
-LINQ-G è una libreria per il web che implementa le funzionalità LINQ.NET tramite i Generatori resi disponibili con la versione 6 del linguaggio ECMAScript.
+LINQ-G è una libreria per il web che implementa le funzionalità LINQ.NET, tramite i Generatori resi disponibili con la versione 6 del linguaggio ECMAScript.
 Nello specifico sono state replicate le funzionalità dell'implementazione LINQ-To-Object, in modo da poter applicare le query su oggetti che soddisfano i protocolli Iterable o Iterator.
 
 La libreria è stata scritta in Typescript, pertanto è stata realizzata una gerarchia di interfacce che sono la rappresentazione astratta dei tipi utilizzati. Alla base di tutto c’è l’interfaccia ```Iterable<T>```, esposta da Typescript, che rappresenta un oggetto compatibile con il protocollo Iterable.
@@ -56,10 +56,9 @@ L’architettura delle classi è leggermente più articolata di quella delle int
 
 > empty, from, fromGenerator, range, repeat, repeatElement
 
-Tutte le chiamate si trovano nella classe astratta di base ```IterableEnumerable<T>``` e contengono solo un rimando alla reale implementazione che si trova nella classe statica ```EnumerableExtensions```.
-
-E’ da qui in poi che possiamo trovare il grosso del “lavoro”, nell’implementazione dei singoli metodi, variabile in funzione del tipo operazione e del tipo di risultato.
-A supporto dei metodi, in alcuni casi esistono delle classi specializzate che si occupano di scorrere i valori e filtrarli/trasformarli/organizzarli e produrre i risultati.
+Tutte le chiamate si trovano nella classe astratta di base ```IterableEnumerable<T>``` e contengono solo un rimando alla reale implementazione che si trova nella classe statica ```EnumerableExtensions```.  
+E' qui che possiamo trovare la parte più sostanziosa del codice, nell’implementazione dei singoli metodi, variabile in funzione del tipo operazione e del tipo di risultato.
+A supporto dei metodi, in alcuni casi esistono delle classi specializzate che si occupano di scorrere i valori, filtrarli/trasformarli/organizzarli e produrre i risultati.
 Questo ulteriore livello di interfacce e classi coinvolte sono definite come SouceIterator(s) e tutti fanno riferimento all’interfaccia ```SourceIterator<T>```:
 
 ```Typescript
