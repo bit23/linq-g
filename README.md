@@ -224,7 +224,3 @@ const result = enumerable
 //   Watermelon
 
 ```
-
-## PERFORMANCES
-
-TODO
