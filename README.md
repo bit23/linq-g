@@ -101,7 +101,7 @@ abstract class BaseIterator<TSource> implements SourceIterator<TSource>  {
 
 Since SouceIterator extends the ```Iterable<T>``` interface, it will consequently expose the method ```[Symbol.iterator](): Iterator<T>``` which will allow to read the elements.  
 In the implementation of the case, during a loop cycle, the iterator will perform its operations on the element, returning it and then pausing the inner loop taking advantage of the pause and resume mechanism of the generator functions.  
-Taking as an example the class ```TakeIterator<T>```, which returns the first n elements of an iterable object (or fewer if not present), we can notice the use of the yield keyword which returns the nth value and temporarily interrupts the execution of the code, then continues from that point when the calling loop will request the next element
+Taking as an example the class ```TakeIterator<T>```, which returns the first n elements of an iterable object (or fewer if not present), we can notice the use of the yield keyword. It returns the nth value and temporarily interrupts the execution of the code, then continues from that point when the calling loop will request the next element.
 
 ```Typescript
 class TakeIterator<T> extends BaseIterator<T> {
@@ -127,7 +127,7 @@ class TakeIterator<T> extends BaseIterator<T> {
 }
 ```
 
-As much as the architecture may seem very articulated, from the user's point of view all this complexity is not visible because the use of all these classes is delegated to the internal implementation of the library. The developer in fact will always have to deal only with the ```IEnumerable<T>``` interface (with its variants) and the methods exposed by it, all the rest is important only for the understanding of the operation and the creation of any methods and custom iterators.
+Even if the architecture may seem very articulated, this is not visible from the user's point of view because the use of all these classes is delegated to the internal implementation of the library. The developer in fact will always have to deal only with the ```IEnumerable<T>``` interface (with its variants) and the methods exposed by it, all the rest is important only for the understanding of the operation and the creation of any methods and custom iterators.
 
 ## USAGE EXAMPLES
 
