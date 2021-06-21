@@ -16,7 +16,7 @@ interface OrderedIterable<TSource> extends Iterable<TSource>
 interface SourceIterator<T> extends Iterable<T>
 ```
 
-The most significant interface in this list is ```IEnumerable<T>``` since it is the base type returned by all LINQ functions that produce sequences of values. This makes it possible to concatenate multiple functions before getting the final result.
+The most significant interface in this list is ```IEnumerable<T>``` since it is the base type returned by all LINQ functions that produce sequences of values. This allows you to concatenate multiple functions before getting the final result.
 
 Example:
 
@@ -51,7 +51,7 @@ class GroupedEnumerable<TSource, TKey, TElement = TSource> extends IterableEnume
 class GroupedResultEnumerable<TSource, TKey, TElement, TResult> extends IterableEnumerable<TResult> implements IEnumerable<TResult>
 ```
 
-The class architecture is slightly more articulated than that of the interfaces, but no additional methods are exposed, other than some static methods of the ```Enumerable<T>``` class:
+The classes architecture is slightly more articulated than that of the interfaces, but no additional methods are exposed, other than some static methods of the ```Enumerable<T>``` class:
 
 > empty, from, fromGenerator, range, repeat, repeatElement
 
