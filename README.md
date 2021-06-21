@@ -131,7 +131,7 @@ Even if the architecture may seem very articulated, this is not visible from the
 
 ## USAGE EXAMPLES
 
-The first operation to do in order to access LINQ functionality is to transform the source object into an Enumerable. It is possible to create Enumerable instances from different sources, the only necessary condition is that the source object implements the Iterable or Iterator behavior (in this case it will be wrapped in an internal object that will make it Iterable). To do this, just call the static method ```Enumerable.from(...)``` passing it the source object.
+The first operation to do in order to access LINQ functionalities is to transform the source object into an Enumerable. It is possible to create Enumerable instances from different sources, the only necessary condition is that the source object implements the Iterable or Iterator behavior (in this case it will be wrapped in an internal object that will make it Iterable). To do this, just call the static method ```Enumerable.from(...)``` passing it the source object.
 Let's take for example an array of objects representing simple information about a fruit:
 
 ```Typescript
