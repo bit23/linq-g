@@ -101,7 +101,7 @@ abstract class BaseIterator<TSource> implements SourceIterator<TSource>  {
 
 Since SouceIterator extends the ```Iterable<T>``` interface, it will consequently expose the method ```[Symbol.iterator](): Iterator<T>``` which will allow to read the elements.  
 In the implementation of the case, during a loop cycle, the iterator will perform its operations on the element, returning it and then pausing the inner loop taking advantage of the pause and resume mechanism of the generator functions.  
-If we take as an example the class ```TakeIterator<T>```, which deals with returning the first n elements of an iterable object (or not if not present), we can notice the use of the yield keyword that returns the nth value and momentarily interrupts the execution of the code, and then continues from that point at the time of the request of the next element by the calling loop.
+Taking as an example the class ```TakeIterator<T>```, which returns the first n elements of an iterable object (or fewer if not present), we can notice the use of the yield keyword which returns the nth value and temporarily interrupts the execution of the code, then continues from that point when the calling loop will request the next element
 
 ```Typescript
 class TakeIterator<T> extends BaseIterator<T> {
