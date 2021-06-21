@@ -57,7 +57,7 @@ The classes architecture is slightly more articulated than that of the interface
 
 All calls are in the abstract base class ```IterableEnumerable<T>``` and contain only a reference to the actual implementation found in the static class ```EnumerableExtensions```.
 
-Here you can find the most substantial part of the code: the implementation of the single methods, which varies according to the type of operation and the type of result. In some cases to support those methods there are specialized classes to read the values, filter/transform/organize them and produce the results. This additional layer of interfaces and classes involved are defined as SouceIterator(s) and all refer to the ```SourceIterator<T>``` interface:
+Here you can find the most substantial part of the code: the implementation of the single methods, which varies according to the type of operation and the type of result. In some cases, to support those methods, there are specialized classes to read the values, filter/transform/organize them and produce the results. This additional layer of interfaces and classes involved are defined as SouceIterator(s) and all refer to the ```SourceIterator<T>``` interface:
 
 ```Typescript
 interface SourceIterator<T> extends Iterable<T> {
@@ -100,7 +100,7 @@ abstract class BaseIterator<TSource> implements SourceIterator<TSource>  {
 ```
 
 Since SouceIterator extends the ```Iterable<T>``` interface, it will consequently expose the method ```[Symbol.iterator](): Iterator<T>``` which will allow to read the elements.  
-During the cycle by a loop, the iterator, in the implementation of the case, will perform its operations on the element by returning it and pausing the inner loop by exploiting the pause and resume mechanism of the generator functions.  
+In the implementation of the case, during a loop cycle, the iterator will perform its operations on the element, returning it and then pausing the inner loop taking advantage of the pause and resume mechanism of the generator functions.  
 If we take as an example the class ```TakeIterator<T>```, which deals with returning the first n elements of an iterable object (or not if not present), we can notice the use of the yield keyword that returns the nth value and momentarily interrupts the execution of the code, and then continues from that point at the time of the request of the next element by the calling loop.
 
 ```Typescript
