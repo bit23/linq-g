@@ -57,7 +57,7 @@ The classes architecture is slightly more articulated than that of the interface
 
 All calls are in the abstract base class ```IterableEnumerable<T>``` and contain only a reference to the actual implementation found in the static class ```EnumerableExtensions```.
 
-Here you can find the most substantial part of the code: the implementation of the single methods, wich varies according to the type of operation and the type of result. In some cases to support those methods there are specialized classes to read the values, filter/transform/organize them and produce the results. This additional layer of interfaces and classes involved are defined as SouceIterator(s) and all refer to the ```SourceIterator<T>``` interface:
+Here you can find the most substantial part of the code: the implementation of the single methods, which varies according to the type of operation and the type of result. In some cases to support those methods there are specialized classes to read the values, filter/transform/organize them and produce the results. This additional layer of interfaces and classes involved are defined as SouceIterator(s) and all refer to the ```SourceIterator<T>``` interface:
 
 ```Typescript
 interface SourceIterator<T> extends Iterable<T> {
