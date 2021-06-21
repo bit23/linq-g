@@ -1,6 +1,6 @@
 # LINQ-G
 
-> In order to test the library in all its functionalities, a web application was created for the creation and execution of LINQ queries.
+> In order to test the library in all its functionalities, a web application was realized for the creation and execution of LINQ queries.
 > TRY-LINQ Project:
 > [https://github.com/bit23/try-linq](https://github.com/bit23/try-linq)
 
