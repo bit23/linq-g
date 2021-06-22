@@ -1,4 +1,0 @@
-aggiungere la riga finale
-export = Linq;
-al file linq-g.d.ts per l'esportazione "node"
-verificare se interferisce quando la compilazione viene utilizzata da browser

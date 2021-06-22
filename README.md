@@ -1,6 +1,6 @@
 # LINQ-G
 
-> In order to test the library in all its functionalities, a web application was created for the creation and execution of LINQ queries.
+> In order to test the library in all its functionalities, a web application was realized to create and execute LINQ queries.  
 > TRY-LINQ Project:
 > [https://github.com/bit23/try-linq](https://github.com/bit23/try-linq)
 
@@ -16,7 +16,7 @@ interface OrderedIterable<TSource> extends Iterable<TSource>
 interface SourceIterator<T> extends Iterable<T>
 ```
 
-The most significant interface in this list is ```IEnumerable<T>``` since it is the base type returned by all LINQ functions that produce sequences of values. This makes it possible to concatenate multiple functions before getting the final result.
+The most significant interface in this list is ```IEnumerable<T>``` since it is the base type returned by all LINQ functions that produce sequences of values. This allows you to concatenate multiple functions before getting the final result.
 
 Example:
 
@@ -51,13 +51,13 @@ class GroupedEnumerable<TSource, TKey, TElement = TSource> extends IterableEnume
 class GroupedResultEnumerable<TSource, TKey, TElement, TResult> extends IterableEnumerable<TResult> implements IEnumerable<TResult>
 ```
 
-The class architecture is slightly more articulated than that of the interfaces, but no additional methods are exposed, other than some static methods of the ```Enumerable<T>``` class:
+The classes architecture is slightly more articulated than that of the interfaces, but no additional methods are exposed, other than some static methods of the ```Enumerable<T>``` class:
 
 > empty, from, fromGenerator, range, repeat, repeatElement
 
 All calls are in the abstract base class ```IterableEnumerable<T>``` and contain only a reference to the actual implementation found in the static class ```EnumerableExtensions```.
 
-It is from here on that we can find the bulk of the "work", in the implementation of the individual methods, varying according to the type of operation and the type of result. To support the methods, in some cases there are specialized classes involved in scrolling through the values and filtering/transforming/organizing them and producing the results. This additional layer of interfaces and classes involved are defined as SouceIterator(s) and all refer to the ```SourceIterator<T>``` interface:
+Here you can find the most substantial part of the code: the implementation of the single methods, which varies according to the type of operation and the type of result. In some cases, to support those methods, there are specialized classes to read the values, filter/transform/organize them and produce the results. This additional layer of interfaces and classes involved are defined as SouceIterator(s) and all refer to the ```SourceIterator<T>``` interface:
 
 ```Typescript
 interface SourceIterator<T> extends Iterable<T> {
@@ -100,8 +100,8 @@ abstract class BaseIterator<TSource> implements SourceIterator<TSource>  {
 ```
 
 Since SouceIterator extends the ```Iterable<T>``` interface, it will consequently expose the method ```[Symbol.iterator](): Iterator<T>``` which will allow to read the elements.  
-During the cycle by a loop, the iterator, in the implementation of the case, will perform its operations on the element by returning it and pausing the inner loop by exploiting the pause and resume mechanism of the generator functions.  
-If we take as an example the class ```TakeIterator<T>```, which deals with returning the first n elements of an iterable object (or not if not present), we can notice the use of the yield keyword that returns the nth value and momentarily interrupts the execution of the code, and then continues from that point at the time of the request of the next element by the calling loop.
+In the implementation of the case, during a loop cycle, the iterator will perform its operations on the element, returning it and then pausing the inner loop taking advantage of the pause and resume mechanism of the generator functions.  
+Taking as an example the class ```TakeIterator<T>```, which returns the first n elements of an iterable object (or fewer if not present), we can notice the use of the yield keyword. It returns the nth value and temporarily interrupts the execution of the code, then continues from that point when the calling loop will request the next element.
 
 ```Typescript
 class TakeIterator<T> extends BaseIterator<T> {
@@ -127,11 +127,11 @@ class TakeIterator<T> extends BaseIterator<T> {
 }
 ```
 
-As much as the architecture may seem very articulated, from the user's point of view all this complexity is not visible because the use of all these classes is delegated to the internal implementation of the library. The developer in fact will always have to deal only with the ```IEnumerable<T>``` interface (with its variants) and the methods exposed by it, all the rest is important only for the understanding of the operation and the creation of any methods and custom iterators.
+Even if the architecture may seem very articulated, this is not visible from the user's point of view because the use of all these classes is delegated to the internal implementation of the library. The developer in fact will always have to deal only with the ```IEnumerable<T>``` interface (with its variants) and the methods exposed by it, all the rest is important only for the understanding of the operation and the creation of any methods and custom iterators.
 
 ## USAGE EXAMPLES
 
-The first operation to do in order to access LINQ functionality is to transform the source object into an Enumerable. It is possible to create Enumerable instances from different sources, the only necessary condition is that the source object implements the Iterable or Iterator behavior (in this case it will be wrapped in an internal object that will make it Iterable). To do this, just call the static method ```Enumerable.from(...)``` passing it the source object.
+The first operation to do in order to access LINQ functionalities is to transform the source object into an Enumerable. It is possible to create Enumerable instances from different sources, the only necessary condition is that the source object implements the Iterable or Iterator behavior (in this case it will be wrapped in an internal object that will make it Iterable). To do this, just call the static method ```Enumerable.from(...)``` passing it the source object.
 Let's take for example an array of objects representing simple information about a fruit:
 
 ```Typescript
@@ -224,7 +224,3 @@ const result = enumerable
 //   Watermelon
 
 ```
-
-## PERFORMANCES
-
-TODO
